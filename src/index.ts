@@ -112,6 +112,7 @@ async function estat(req: Request, env: Env, ctx: ExecutionContext): Promise<Res
   const clau = new Request(new URL('/mcp/estat', req.url).toString());
   const desat = await caches.default.match(clau);
   if (desat) return desat;
+  await asseguraDades(env, ctx); // the counter also says which data are in use (same 10-minute rule)
   const e = await env.COMPTADOR.getByName('global').estat(dia(), mes());
   const r = json(200, { servei: 'crida studio MCP', ...e, dades: estatDades(), actualitzat: new Date().toISOString() }, { 'Cache-Control': 'public, max-age=60' });
   ctx.waitUntil(caches.default.put(clau, r.clone()));

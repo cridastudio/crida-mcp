@@ -2,7 +2,7 @@
 // Every Recursos release writes recursos/agents/mcp/crida.json (written by the website's build), the hosting syncs it
 // every 20 minutes, and this file reads it: new pieces reach the server with no deploy.
 // - One read per isolate and 10 minutes at most, shared by concurrent calls (one promise), through Cloudflare's cache
-//   (cacheTtl 600): never more than one subrequest per call, never a call to this Worker (the address is a Recursos file,
+//   (10 minutes for good answers only): never more than one subrequest per call, never a call to this Worker (the address is a Recursos file,
 //   not a Worker route), never an external host.
 // - The copy bundled in the Worker (dades/crida.json) is the fallback: if the file is missing or broken, it stays.
 // - The caps are untouched: this runs after the counter, only for calls that were counted and allowed.
@@ -34,7 +34,10 @@ async function llegeix(env: Env): Promise<void> {
   const url = env.DADES_URL;
   if (!url) return;
   try {
-    const r = await fetch(url, { cf: { cacheTtl: 600, cacheEverything: true }, signal: AbortSignal.timeout(ESPERA_MS) } as RequestInit);
+    // Only a good answer is kept in Cloudflare's cache (10 minutes), and each 10-minute window has its own cache entry
+    // (?f=window): an old answer, a 404 before a sync for instance, can never stick for longer than one window.
+    const finestra = Math.floor(Date.now() / TTL_MS);
+    const r = await fetch(`${url}${url.includes('?') ? '&' : '?'}f=${finestra}`, { cf: { cacheTtlByStatus: { '200-299': 600, '300-599': 0 }, cacheEverything: true }, signal: AbortSignal.timeout(ESPERA_MS) } as RequestInit);
     if (!r.ok) { darrerError = `HTTP ${r.status}`; return; }
     if (Number(r.headers.get('content-length') ?? '0') > MAX_BYTES) { darrerError = 'too large'; return; }
     const d: unknown = await r.json();
