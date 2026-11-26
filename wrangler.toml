@@ -1,0 +1,60 @@
+# crida studio · public MCP server (read only).
+# The top of this file is the LOCAL bench (npm run dev). Production is [env.production] at the end, deployed with
+# `npx wrangler deploy --env production` only after the cap tests pass locally.
+# Caps live in [vars]: they are never raised without the owner's express permission.
+name = "crida-mcp"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+workers_dev = false
+preview_urls = false
+
+[vars]
+# Data published by the website on every release. Local tests point it to a local copy with --var.
+DADES_URL = "https://www.crida.studio/recursos/agents/mcp/crida.json"
+# Per summarised IP (IPv6 by /64) and Madrid day: exact, counted by the Comptador (Durable Object).
+TOPALL_IP_DIA = "300"
+# Whole service: per Madrid day and per calendar month. Beyond them every call gets 429 until the next day / month.
+TOPALL_DIA = "20000"
+TOPALL_MES = "300000"
+# Semantic search (AI Search binding, phase c): at most this many per month, then static search. 1,000 are free.
+TOPALL_CERCA_MES = "900"
+
+# Per IP per minute, per Cloudflare location (approximate, a first filter before the exact counter). Free.
+[[ratelimits]]
+name = "PER_MINUT"
+namespace_id = "2611"
+simple = { limit = 60, period = 60 }
+
+[[durable_objects.bindings]]
+name = "COMPTADOR"
+class_name = "Comptador"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Comptador"]
+
+[env.production]
+name = "crida-mcp"
+workers_dev = false
+preview_urls = false
+routes = [
+  { pattern = "www.crida.studio/mcp", zone_name = "crida.studio" },
+  { pattern = "www.crida.studio/mcp/*", zone_name = "crida.studio" },
+  { pattern = "www.crida.studio/.well-known/mcp/*", zone_name = "crida.studio" }
+]
+
+[env.production.vars]
+DADES_URL = "https://www.crida.studio/recursos/agents/mcp/crida.json"
+TOPALL_IP_DIA = "300"
+TOPALL_DIA = "20000"
+TOPALL_MES = "300000"
+TOPALL_CERCA_MES = "900"
+
+[[env.production.ratelimits]]
+name = "PER_MINUT"
+namespace_id = "2611"
+simple = { limit = 60, period = 60 }
+
+[[env.production.durable_objects.bindings]]
+name = "COMPTADOR"
+class_name = "Comptador"

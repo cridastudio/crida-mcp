@@ -1,0 +1,22 @@
+{
+  "name": "crida-mcp",
+  "private": true,
+  "license": "MIT",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Public read-only MCP server of crida studio at https://www.crida.studio/mcp",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "dades": "node eines/genera-dades.mjs",
+    "dev": "wrangler dev --port 8799",
+    "tipus": "tsc -p .",
+    "test": "node --test test/*.test.ts",
+    "proves": "node eines/proves-local.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261114.1",
+    "@types/node": "^24.19.2",
+    "typescript": "5.9.3",
+    "wrangler": "4.161.0"
+  }
+}
