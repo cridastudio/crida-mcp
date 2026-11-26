@@ -1,0 +1,10 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "studio.crida/mcp",
+  "title": "crida studio",
+  "description": "Marketing, web and AI guides, own open data, services, prices and cases of crida studio.",
+  "version": "0.1.0",
+  "websiteUrl": "https://www.crida.studio/en/insights/",
+  "repository": { "url": "https://github.com/cridastudio/crida-mcp", "source": "github" },
+  "remotes": [{ "type": "streamable-http", "url": "https://www.crida.studio/mcp" }]
+}
