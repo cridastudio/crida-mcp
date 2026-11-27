@@ -116,9 +116,14 @@ async function protocol() {
     comprova('parse error is 400 -32700', x.status === 400 && (await x.json()).error.code === -32700);
     x = await fetch(`${BASE}/mcp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'ping', params: { pad: 'x'.repeat(70000) } }) });
     comprova('body over 64 KB is 413', x.status === 413);
+    // our own test calls (27/11/2026): the right X-Crida-Prova counts apart, a wrong one counts as an ordinary call
+    const ping = { jsonrpc: '2.0', id: 99, method: 'ping' };
+    await fetch(`${BASE}/mcp`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Crida-Prova': 'prova-local-27-11' }, body: JSON.stringify(ping) });
+    await fetch(`${BASE}/mcp`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Crida-Prova': 'no-es-la-clau' }, body: JSON.stringify(ping) });
     x = await fetch(`${BASE}/mcp/estat`);
     const e = await x.json();
-    comprova('counter is visible at /mcp/estat', x.status === 200 && e.avui.crides === 20 && e.avui.topall === 1000, JSON.stringify(e));
+    comprova('counter is visible at /mcp/estat', x.status === 200 && e.avui.crides === 22 && e.avui.topall === 1000, JSON.stringify(e));
+    comprova('our test calls are counted apart (only the right key)', e.avui.proves === 1 && e.mes_actual.proves === 1, JSON.stringify(e));
   } finally { await atura(s); }
 }
 

@@ -153,7 +153,9 @@ export default {
     const avui = dia();
     if (ipsTallades.get(ip.resum) === avui) return errorRpc(429, -32029, MISSATGE_TOPALL.ip!, { 'Retry-After': String(segonsFinsDema()) });
 
-    const d = await env.COMPTADOR.getByName('global').compta(ip.resum, avui, mes());
+    // Our own test calls carry X-Crida-Prova with the secret PROVA_CLAU: counted and capped as usual, and also counted apart.
+    const prova = !!env.PROVA_CLAU && req.headers.get('x-crida-prova') === env.PROVA_CLAU;
+    const d = await env.COMPTADOR.getByName('global').compta(ip.resum, avui, mes(), prova);
     if (!d.ok) {
       if (d.motiu === 'ip') { if (ipsTallades.size > 5000) ipsTallades.clear(); ipsTallades.set(ip.resum, avui); }
       else { tancatFins = ara + 60_000; motiuTancat = d.motiu ?? 'dia'; }
