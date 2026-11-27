@@ -1,7 +1,6 @@
 node_modules/
 .wrangler/
 .dev.vars
-.claude/
 # Private: local paths and content rules (eines/regles.local.json) and the internal notes.
 *.local.json
 LLEGEIX-ME.md
